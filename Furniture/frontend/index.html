@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Furniture Company - Управление продукцией и производством</title>
+    <style>
+        :root {
+            --color-primary: #355CBD;
+            --color-primary-hover: #2a4599;
+            --color-primary-active: #1f3370;
+            --color-danger: #E63946;
+            --color-danger-hover: #d62828;
+            --color-success: #06b6d4;
+            --color-success-hover: #0891b2;
+            --color-warning: #f59e0b;
+            --color-warning-hover: #d97706;
+            --color-info: #3b82f6;
+            --color-bg: #f8f9fa;
+            --color-bg-light: #ffffff;
+            --color-border: #e5e7eb;
+            --color-text: #1f2937;
+            --color-text-light: #6b7280;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.5;
+        }
+
+        /* Layout */
+        .layout {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .layout__header {
+            background: linear-gradient(135deg, var(--color-primary) 0%, #2a4599 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header__content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header__logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .header__title {
+            font-size: 1.25rem;
+            font-weight: 500;
+            opacity: 0.95;
+        }
+
+        .layout__body {
+            display: flex;
+            flex: 1;
+        }
+
+        .layout__sidebar {
+            width: 250px;
+            background: var(--color-bg-light);
+            border-right: 1px solid var(--color-border);
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .layout__main {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        /* Sidebar */
+        .sidebar__section {
+            margin-bottom: 2rem;
+        }
+
+        .sidebar__title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--color-text-light);
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+            padding: 0 0.5rem;
+        }
+
+        .sidebar__btn {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            background: transparent;
+            border: none;
+            border-left: 3px solid transparent;
+            border-radius: 6px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: var(--color-text);
+            transition: all 0.2s;
+        }
+
+        .sidebar__btn:hover {
+            background: var(--color-bg);
+            color: var(--color-primary);
+        }
+
+        .sidebar__btn--active {
+            background: var(--color-primary);
+            color: white;
+            border-left-color: white;
+        }
+
+        /* Pages */
+        .page {
+            display: none;
+        }
+
+        .page--active {
+            display: block;
+        }
+
+        .page__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+        }
+
+        .page__title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--color-primary);
+        }
+
+        /* Cards */
+        .card {
+            background: var(--color-bg-light);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .card__header {
+            background: linear-gradient(135deg, var(--color-primary) 0%, #2a4599 100%);
+            color: white;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .card__title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .card__body {
+            padding: 1.5rem;
+        }
+
+        /* Alert Container */
+        .alert-container {
+            margin-bottom: 1rem;
+        }
+
+        .alert {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 0.75rem;
+            border-left: 4px solid;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert--success {
+            background: #d1fae5;
+            border-left-color: var(--color-success);
+            color: #065f46;
+        }
+
+        .alert--error {
+            background: #fee2e2;
+            border-left-color: var(--color-danger);
+            color: #7f1d1d;
+        }
+
+        .alert--warning {
+            background: #fef3c7;
+            border-left-color: var(--color-warning);
+            color: #78350f;
+        }
+
+        .alert--info {
+            background: #dbeafe;
+            border-left-color: var(--color-info);
+            color: #0c2340;
+        }
+
+        .alert__icon {
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .alert__content {
+            flex: 1;
+        }
+
+        .alert__title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .alert__message {
+            font-size: 0.95rem;
+        }
+
+        .alert__close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.25rem;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+            flex-shrink: 0;
+        }
+
+        .alert__close:hover {
+            opacity: 1;
+        }
+
+        /* Tables */
+        .table {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        thead {
+            background: #f3f4f6;
+            font-weight: 600;
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 2px solid var(--color-border);
+            color: var(--color-text);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        tbody tr:hover {
+            background: #fafbfc;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .btn--primary {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .btn--primary:hover {
+            background: var(--color-primary-hover);
+        }
+
+        .btn--primary:active {
+            background: var(--color-primary-active);
+        }
+
+        .btn--secondary {
+            background: #f3f4f6;
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+        }
+
+        .btn--secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .btn--danger {
+            background: var(--color-danger);
+            color: white;
+        }
+
+        .btn--danger:hover {
+            background: var(--color-danger-hover);
+        }
+
+        .btn--success {
+            background: var(--color-success);
+            color: white;
+        }
+
+        .btn--success:hover {
+            background: var(--color-success-hover);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Button Groups */
+        .table__actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(53, 92, 189, 0.1);
+        }
+
+        .form-control.error {
+            border-color: var(--color-danger);
+        }
+
+        .form-control.error:focus {
+            box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.1);
+        }
+
+        .form__error {
+            color: var(--color-danger);
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+            display: block;
+        }
+
+        /* Form Layout */
+        .form__row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form__row.full {
+            grid-template-columns: 1fr;
+        }
+
+        .form__actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            justify-content: flex-end;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .layout__body {
+                flex-direction: column;
+            }
+
+            .layout__sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--color-border);
+            }
+
+            .page__header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .form__row {
+                grid-template-columns: 1fr;
+            }
+
+            .table__actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <!-- Header -->
+        <header class="layout__header">
+            <div class="header__content">
+                <div class="header__logo">🏠</div>
+                <div>
+                    <h1 class="header__title">Furniture Company</h1>
+                    <p style="margin: 0; font-size: 0.9rem; opacity: 0.9;">Управление продукцией и производством</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="layout__body">
+            <!-- Sidebar -->
+            <aside class="layout__sidebar">
+                <div class="sidebar__section">
+                    <div class="sidebar__title">📦 Продукция</div>
+                    <button class="sidebar__btn" data-page="products" onclick="switchPage('products')">
+                        📋 Продукты
+                    </button>
+                    <button class="sidebar__btn" data-page="edit-product" onclick="switchPage('edit-product')">
+                        ➕ Добавить продукт
+                    </button>
+                </div>
+
+                <div class="sidebar__section">
+                    <div class="sidebar__title">🏭 Производство</div>
+                    <button class="sidebar__btn" data-page="workshops" onclick="switchPage('workshops')">
+                        🏢 Цеха
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Main -->
+            <main class="layout__main">
+                <!-- СТРАНИЦА: Список продукции -->
+                <section class="page" id="page-products">
+                    <div class="page__header">
+                        <h1 class="page__title">Список продукции</h1>
+                        <button class="btn btn--success" onclick="showEditForm()">
+                            ➕ Добавить продукт
+                        </button>
+                    </div>
+
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">Продукты компании</h2>
+                        </div>
+                        <div class="card__body">
+                            <div id="alert-container" class="alert-container"></div>
+
+                            <div class="table">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Артикул</th>
+                                            <th>Наименование</th>
+                                            <th>Тип</th>
+                                            <th>Материал</th>
+                                            <th>Мин. цена (₽)</th>
+                                            <th>Время произв. (ч)</th>
+                                            <th>Действия</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="products-tbody">
+                                        <tr>
+                                            <td colspan="7" style="text-align: center; padding: 2rem; color: #999;">
+                                                Загрузка данных...
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- СТРАНИЦА: Редактирование продукта -->
+                <section class="page" id="page-edit-product">
+                    <div class="page__header">
+                        <h1 class="page__title" id="edit-title">Добавить новый продукт</h1>
+                        <button class="btn btn--secondary" onclick="switchPage('products')">
+                            ← Вернуться к списку
+                        </button>
+                    </div>
+
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">Информация о продукте</h2>
+                        </div>
+                        <div class="card__body">
+                            <div id="alert-container-edit" class="alert-container"></div>
+
+                            <form id="form-product" onsubmit="event.preventDefault(); submitProductForm();">
+                                <div class="form__row">
+                                    <div class="form-group">
+                                        <label class="form-label" for="product-article">Артикул *</label>
+                                        <input
+                                            type="number"
+                                            id="product-article"
+                                            class="form-control"
+                                            placeholder="Например: 123456"
+                                            required
+                                        >
+                                        <span class="form__error" id="error-article"></span>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" for="product-name">Наименование *</label>
+                                        <input
+                                            type="text"
+                                            id="product-name"
+                                            class="form-control"
+                                            placeholder="Например: Диван Лондон"
+                                            required
+                                        >
+                                        <span class="form__error" id="error-name"></span>
+                                    </div>
+                                </div>
+
+                                <div class="form__row">
+                                    <div class="form-group">
+                                        <label class="form-label" for="product-type">Тип продукта *</label>
+                                        <select id="product-type" class="form-control" required>
+                                            <option value="">-- Выберите тип --</option>
+                                        </select>
+                                        <span class="form__error" id="error-product-type"></span>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label" for="product-material">Материал *</label>
+                                        <select id="product-material" class="form-control" required>
+                                            <option value="">-- Выберите материал --</option>
+                                        </select>
+                                        <span class="form__error" id="error-material-type"></span>
+                                    </div>
+                                </div>
+
+                                <div class="form-group form__row full">
+                                    <div>
+                                        <label class="form-label" for="product-price">Минимальная цена партнёра (₽) *</label>
+                                        <input
+                                            type="number"
+                                            id="product-price"
+                                            class="form-control"
+                                            placeholder="Например: 15000.00"
+                                            step="0.01"
+                                            required
+                                        >
+                                        <span class="form__error" id="error-minimum-partner-price"></span>
+                                    </div>
+                                </div>
+
+                                <div class="form__actions">
+                                    <button type="button" class="btn btn--secondary" onclick="switchPage('products')">
+                                        ✕ Отменить
+                                    </button>
+                                    <button type="submit" class="btn btn--success">
+                                        ✓ Сохранить
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- СТРАНИЦА: Цеха -->
+                <section class="page" id="page-workshops">
+                    <div class="page__header">
+                        <h1 class="page__title">Цеха производства</h1>
+                    </div>
+
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">Список цехов</h2>
+                        </div>
+                        <div class="card__body">
+                            <div id="alert-container-workshops" class="alert-container"></div>
+
+                            <div class="table">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Название цеха</th>
+                                            <th>Тип</th>
+                                            <th>Количество сотрудников</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="workshops-tbody">
+                                        <tr>
+                                            <td colspan="3" style="text-align: center; padding: 2rem; color: #999;">
+                                                Загрузка данных...
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- СТРАНИЦА: Цеха конкретного продукта -->
+                <section class="page" id="page-product-workshops">
+                    <div class="page__header">
+                        <h1 class="page__title" id="product-workshops-title">Цеха для продукции</h1>
+                        <button class="btn btn--secondary" onclick="switchPage('products')">
+                            ← Вернуться к списку продукции
+                        </button>
+                    </div>
+
+                    <div class="card">
+                        <div class="card__header">
+                            <h2 class="card__title">Цеха для изготовления продукции</h2>
+                        </div>
+                        <div class="card__body">
+                            <div id="alert-container-product-workshops" class="alert-container"></div>
+
+                            <div class="table">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Название цеха</th>
+                                            <th>Тип</th>
+                                            <th>Количество сотрудников</th>
+                                            <th>Время производства (ч)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="product-workshops-tbody">
+                                        <tr>
+                                            <td colspan="4" style="text-align: center; padding: 2rem; color: #999;">
+                                                Выберите продукт, чтобы посмотреть цеха его производства
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/ui.js"></script>
+    <script>
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            switchPage('products');
+            loadProducts();
+            loadWorkshops();
+            loadProductTypes();
+            loadMaterialTypes();
+        });
+    </script>
+</body>
+</html>
