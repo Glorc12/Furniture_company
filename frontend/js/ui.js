@@ -224,13 +224,7 @@ function renderProductWorkshops(workshops) {
     tbody.innerHTML = '';
 
     if (!workshops || workshops.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="4" style="text-align: center; padding: 2rem; color: #999;">
-                    Для данного продукта не настроены цеха производства
-                </td>
-            </tr>
-        `;
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 2rem; color: #999;">Нет цехов для этого продукта</td></tr>`;
         return;
     }
 
@@ -260,7 +254,9 @@ async function loadProductWorkshops(productId, productName = '') {
                 : 'Цеха для продукции';
         }
 
-        const response = await fetch(`/api/workshops/product/${productId}`);
+        // ✅ ИСПРАВЛЕНИЕ: Правильный порт 5000 (вместо 8000)
+        const response = await fetch(`http://localhost:5000/api/workshops/product/${productId}`);
+
         if (!response.ok) {
             throw new Error(`Ошибка загрузки цехов (код ${response.status})`);
         }
@@ -273,9 +269,9 @@ async function loadProductWorkshops(productId, productName = '') {
     } catch (error) {
         console.error('Ошибка загрузки цехов для продукта:', error);
         showAlert(
-            `Ошибка загрузки цехов для продукта: ${error.message}`,
+            `Ошибка загрузки цехов: ${error.message}. Убедитесь, что Flask сервер запущен на порту 5000 (python app.py) и есть цеха для этого продукта в БД.`,
             'error',
-            'alert-container-product-workshops'
+            'alert-container'
         );
     }
 }
@@ -313,7 +309,7 @@ async function showEditForm(productId = null) {
             document.getElementById('product-material').value = product.material_type_id;
             document.getElementById('product-price').value = product.minimum_partner_price;
         } catch (error) {
-            showAlert(`Ошибка загрузки продукта: ${error.message}`, 'error', 'alert-container-edit');
+            showAlert(`Ошибка загрузки продукта: ${error.message}`, 'error', 'alert-container');
         }
     } else {
         // Добавление нового
@@ -472,7 +468,7 @@ async function submitProductForm() {
     });
 
     if (hasErrors) {
-        showAlert('Пожалуйста, исправьте ошибки в форме', 'warning', 'alert-container-edit');
+        showAlert('Пожалуйста, исправьте ошибки в форме', 'warning', 'alert-container');
         return;
     }
 
@@ -491,7 +487,7 @@ async function submitProductForm() {
         await loadProducts();
         switchPage('products');
     } catch (error) {
-        showAlert(`Ошибка: ${error.message}`, 'error', 'alert-container-edit');
+        showAlert(`Ошибка: ${error.message}`, 'error', 'alert-container');
     }
 }
 
@@ -519,7 +515,7 @@ async function loadWorkshops() {
         const workshops = await getWorkshops();
         renderWorkshops(workshops);
     } catch (error) {
-        showAlert(`Ошибка загрузки цехов: ${error.message}`, 'error', 'alert-container-workshops');
+        showAlert(`Ошибка загрузки цехов: ${error.message}`, 'error', 'alert-container');
     }
 }
 

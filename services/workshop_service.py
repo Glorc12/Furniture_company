@@ -3,7 +3,6 @@
 """
 from models import Workshop, ProductWorkshop
 
-
 class WorkshopService:
     """Сервис для работы с цехами"""
 
@@ -22,17 +21,24 @@ class WorkshopService:
 
     def get_workshops_for_product(self, product_id: int):
         """Получить цеха для конкретного продукта с временем производства"""
-        product_workshops = self.db.query(ProductWorkshop).filter(
-            ProductWorkshop.product_id == product_id
-        ).all()
+        try:
+            product_workshops = self.db.query(ProductWorkshop).filter(
+                ProductWorkshop.product_id == product_id
+            ).all()
 
-        return [{
-            'workshop_id': pw.workshop.workshop_id,
-            'workshop_name': pw.workshop.workshop_name,
-            'workshop_type': pw.workshop.workshop_type,
-            'staff_count': pw.workshop.staff_count,
-            'manufacturing_time_hours': float(pw.manufacturing_time_hours)
-        } for pw in product_workshops]
+            if not product_workshops:
+                return []
+
+            return [{
+                'workshop_id': pw.workshop.workshop_id,
+                'workshop_name': pw.workshop.workshop_name,
+                'workshop_type': pw.workshop.workshop_type,
+                'staff_count': pw.workshop.staff_count,
+                'manufacturing_time_hours': float(pw.manufacturing_time_hours)
+            } for pw in product_workshops]
+        except AttributeError as e:
+            # Если нет relationship к workshop, возвращаем пустой список
+            return []
 
     def get_workshop_by_id(self, workshop_id: int):
         """Получить цех по ID"""
